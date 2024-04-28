@@ -1,0 +1,144 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model category {
+  id   Int    @id @default(autoincrement())
+  name String
+  test test[]
+}
+
+model employee {
+  id                  String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  surname             String
+  name                String
+  patronymic          String
+  image               String?
+  employee_credential employee_credential?
+  employee_level      employee_level[]
+  employee_position   employee_position[]
+  test                test[]
+  test_result         test_result[]
+  test_visited        test_visited[]
+}
+
+model employee_credential {
+  employee_id String   @id @db.Uuid
+  login       String
+  password    String
+  employee    employee @relation(fields: [employee_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model employee_level {
+  employee_id String   @db.Uuid
+  level_id    Int
+  date        DateTime @default(dbgenerated("CURRENT_DATE")) @db.Date
+  employee    employee @relation(fields: [employee_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  level       level    @relation(fields: [level_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([employee_id, level_id])
+}
+
+model employee_position {
+  employee_id String   @db.Uuid
+  position_id Int
+  employee    employee @relation(fields: [employee_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  position    position @relation(fields: [position_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([employee_id, position_id])
+}
+
+model level {
+  id             Int              @id @default(autoincrement())
+  name           String
+  employee_level employee_level[]
+  test           test[]
+}
+
+model position {
+  id                Int                 @id @default(autoincrement())
+  name              String
+  employee_position employee_position[]
+}
+
+model result_questions {
+  result_id      String         @db.Uuid
+  question_id    String         @db.Uuid
+  answer         Json
+  test_questions test_questions @relation(fields: [question_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  test_result    test_result    @relation(fields: [result_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([result_id, question_id])
+}
+
+model test {
+  id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String
+  description    String?
+  image          String?
+  level_id       Int
+  type_id        Int
+  category_id    Int
+  author_id      String           @db.Uuid
+  employee       employee         @relation(fields: [author_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  category       category         @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  level          level            @relation(fields: [level_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  type_test      type_test        @relation(fields: [type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  test_public    test_public?
+  test_questions test_questions[]
+  test_result    test_result[]
+  test_visited   test_visited[]
+}
+
+model test_public {
+  test_id String   @id @db.Uuid
+  date    DateTime @default(dbgenerated("CURRENT_DATE")) @db.Date
+  test    test     @relation(fields: [test_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model test_questions {
+  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  test_id          String             @db.Uuid
+  type_id          Int
+  question         Json
+  answers          Json
+  result_questions result_questions[]
+  test             test               @relation(fields: [test_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  type_question    type_question      @relation(fields: [type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model test_result {
+  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  test_id          String             @db.Uuid
+  employee_id      String             @db.Uuid
+  date             DateTime           @default(dbgenerated("CURRENT_DATE")) @db.Date
+  result_questions result_questions[]
+  employee         employee           @relation(fields: [employee_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  test             test               @relation(fields: [test_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model test_visited {
+  test_id     String   @db.Uuid
+  employee_id String   @db.Uuid
+  employee    employee @relation(fields: [employee_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  test        test     @relation(fields: [test_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([employee_id, test_id])
+}
+
+model type_question {
+  id             Int              @id @default(autoincrement())
+  name           String
+  test_questions test_questions[]
+}
+
+model type_test {
+  id   Int    @id @default(autoincrement())
+  name String
+  test test[]
+}
