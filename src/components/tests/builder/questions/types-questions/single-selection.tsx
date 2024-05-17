@@ -1,25 +1,45 @@
-import type { SingleSelectionType } from "@/types/questions";
-import type { test_questions } from "@prisma/client";
+import type { SingleSelectionTestType, SingleSelectionType } from "@/types/questions";
+import { test_questions } from "@prisma/client";
+import { Separator } from '@/components/ui/separator';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+import Image from 'next/image'
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
-import { useEffect } from "react";
+import { Dispatch, SetStateAction, useEffect } from "react";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { AiOutlineClose, AiOutlinePlus } from "react-icons/ai";
-import { cn } from "@/lib/utils";
 import { PiSealCheckDuotone } from "react-icons/pi";
 import { v4 } from "uuid";
 import useDesigner from "@/hooks/useDesigner";
+import { Toggle } from "@/components/ui/toggle";
+import { UUID } from "crypto";
 
-
-export default function DesignerProperties({question} : {question:test_questions}) {
-  switch(question.type_id) {
-    case 1: return <SingleSelection question={question}/>
-    default: return <div>Элемент не предусмотрен</div>
-  }
+export function DesignerComponent({ question }: { question: test_questions }) {
+  const element = question as SingleSelectionType;
+  return <div className='p-2 pb-4'>
+    <div className='text-2xl italic'>Выберите верный вариант</div>
+    <div className='flex items-center p-1'>
+      <Image className='cursor-not-allowed block dark:hidden' src={element.question.image ?? '/im-missing-light.svg' } alt='Отсутствует изображение' width={50} height={50} />
+      <Image className='cursor-not-allowed hidden dark:block' src={element.question.image ?? '/im-missing-dark.svg' } alt='Отсутствует изображение' width={50} height={50} />
+      <div className='ms-2'>{!element.question.text ? '[Введите значение...]' : element.question.text}</div>
+    </div>
+    <Separator className='mt-2 mb-2' />
+    <RadioGroup disabled className={cn('ps-4 pt-2', element.answers.length > 4 && 'grid grid-cols-2')}>
+      {element.answers.map(answer =>
+        <div key={`${element.id}-${answer.id}`} className='flex items-center space-x-2'>
+          <RadioGroupItem value={`${answer.id}`} id={`${answer.id}`} />
+          <Label className='cursor-not-allowed' htmlFor={`${answer.id}`}>{!answer.text ? '[Введите значение...]' : answer.text}</Label>
+        </div>
+      )}
+    </RadioGroup>
+  </div>
 }
+
 
 const SingleSelectionPropertiesSchema = z.object({
   question: z.object({
@@ -34,7 +54,7 @@ const SingleSelectionPropertiesSchema = z.object({
 })
 
 type SingleSelectionPropertiesFormSchemaType = z.infer<typeof SingleSelectionPropertiesSchema>;
-function SingleSelection({ question }: { question: test_questions }) {
+export function DesignerProperties({ question }: { question: test_questions }) {
   const element = question as SingleSelectionType;
   const { updateElement } = useDesigner();
   //console.log(SingleSelectionPropertiesSchema.parse(element))
@@ -114,17 +134,22 @@ function SingleSelection({ question }: { question: test_questions }) {
                     field.onChange(field.value);
                   }}
                 />
-                <PiSealCheckDuotone className='h-8 w-8'
-                  onClick={() => {
+                <Toggle
+                  onClick={(e) => {
+                    e.preventDefault();
                     if (!field.value[index].is_true) {
                       field.value.forEach((el, i) => field.value[i].is_true = false)
                       field.value[index].is_true = true;
                       field.onChange(field.value);
                     }
-                  }}
-                  fill-rule="nonzero"
-                  fill={option.is_true ? "green" : "red"}
-                />
+                    field.onChange(field.value);
+                    e.currentTarget.blur();
+                  }}>
+                  <PiSealCheckDuotone className='h-8 w-8'
+                    fill-rule="nonzero"
+                    fill={option.is_true ? "green" : "red"}
+                  />
+                </Toggle>
                 <Button
                   variant={"ghost"}
                   size={"icon"}
@@ -146,4 +171,24 @@ function SingleSelection({ question }: { question: test_questions }) {
       )} />
     </form>
   </Form>
+}
+
+export function TestComponent({ question, selected, setSelected, result_view }: { question: test_questions, selected: UUID[], setSelected:Dispatch<SetStateAction<any[]>>, result_view: boolean }) {
+  const element = question as SingleSelectionType;
+  return <div className='p-2 pb-4'>
+    <div className='text-2xl italic'>Выберите верный вариант</div>
+    <div className='flex items-center p-1'>
+      {element.question.image && (<Image src={element.question.image} alt='Изображение' width={100} height={100} />)}
+      <div className='ms-2'>{element.question.text}</div>
+    </div>
+    <Separator className='mt-2 mb-2' />
+    <RadioGroup disabled={result_view} className={cn('ps-4 pt-2', element.answers.length > 4 && 'grid grid-cols-2')}>
+      {element.answers.map(answer =>
+        <div key={`${element.id}-${answer.id}`} className='flex items-center space-x-2'>
+          <RadioGroupItem disabled={result_view} className={cn(result_view && (answer.is_true ? 'text-green-400 border-green-400' : 'text-red-400 border-red-400'))} onClick={() => setSelected([answer.id])} value={`${answer.id}`} id={`${element.id}-${answer.id}`} />
+          <Label className={cn(result_view && (answer.is_true ? 'cursor-not-allowed text-green-400' : 'cursor-not-allowed text-red-400'))} htmlFor={`${element.id}-${answer.id}`}>{answer.text}</Label>
+        </div>
+      )}
+    </RadioGroup>
+  </div>
 }

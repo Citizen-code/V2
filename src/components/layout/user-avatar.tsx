@@ -23,10 +23,10 @@ export default function UserAvatar() {
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">
-        <DropdownMenuLabel>{session.user?.name}</DropdownMenuLabel>
+        <DropdownMenuLabel>{`${names[0]} ${names[1]}`}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => push('/profile')}>
+          <DropdownMenuItem onClick={() => push('/')}>
             Профиль
             <DropdownMenuShortcut><CgProfile/></DropdownMenuShortcut>
           </DropdownMenuItem>

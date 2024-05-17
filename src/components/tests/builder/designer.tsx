@@ -7,11 +7,11 @@ import useDesigner from "@/hooks/useDesigner";
 import { BiSolidTrash } from 'react-icons/bi'
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import type { test_questions, type_test } from "@prisma/client";
-import DesignerComponents from "../questions/designer-components";
-import Constructor from "../questions/constructor";
+import type { test_questions, type_question } from "@prisma/client";
+import DesignerComponents from "./questions/designer-components";
+import Constructor from "./questions/constructor";
 
-export default function Designer({types}:{types:type_test[]}) {
+export default function Designer({types}:{types:type_question[]}) {
   const { elements, addElement, removeElement, selectedElement, setSelectedElement } = useDesigner();
   const droppable = useDroppable({ id: 'designer-drop-area', data: { isDesignerDropArea: true } })
 

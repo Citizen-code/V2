@@ -1,7 +1,7 @@
 import useDesigner from "@/hooks/useDesigner";
 import { Button } from "@/components/ui/button";
 import { AiOutlineClose } from 'react-icons/ai'
-import DesignerProperties from "../questions/designer-properties";
+import DesignerProperties from "./questions/designer-properties";
 
 export default function PropertiesTestSidebar() {
   const { selectedElement, setSelectedElement } = useDesigner();

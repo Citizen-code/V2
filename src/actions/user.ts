@@ -14,3 +14,4 @@ export async function GetTestsStats() {
     results: data.reduce((sum, i) => sum + i._count.test_result, 0),
   }
 }
+

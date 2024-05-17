@@ -20,23 +20,16 @@ export default {
         }
       },
     }),
-    // ...add more providers here
   ],
   callbacks: {
     session: async ({ session, token }) => {
-      if (session?.user) {
-        session.user.id = token.uid;
-      }
+      if (session?.user) session.user.id = token.uid;
       return session;
     },
     jwt: async ({ user, token }) => {
-      if (user) {
-        token.uid = user.id;
-      }
+      if (user) token.uid = user.id;
       return token;
     },
   },
-  session: {
-    strategy: 'jwt',
-  },
+  session: {strategy: 'jwt'},
 } as AuthOptions

@@ -11,6 +11,7 @@ model category {
   id   Int    @id @default(autoincrement())
   name String
   test test[]
+
 }
 
 model employee {
@@ -69,6 +70,7 @@ model position {
 model result_questions {
   result_id      String         @db.Uuid
   question_id    String         @db.Uuid
+  is_correct     Boolean
   answer         Json
   test_questions test_questions @relation(fields: [question_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   test_result    test_result    @relation(fields: [result_id], references: [id], onDelete: NoAction, onUpdate: NoAction)

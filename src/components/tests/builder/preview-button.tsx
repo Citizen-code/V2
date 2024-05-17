@@ -6,41 +6,64 @@ import useDesigner from "@/hooks/useDesigner";
 import { useState } from "react";
 import Confetti from "react-confetti";
 import { BsArrowLeft } from "react-icons/bs";
-import TestComponents from "../questions/test-components";
-import { SingleSelectionTestType, SingleSelectionType } from "@/types/questions";
+import TestComponents from "./questions/test-components";
+import { MultipleSelectionType, SingleSelectionTestType, SingleSelectionType } from "@/types/questions";
 
 export default function PreviewDialogButton() {
   const { elements } = useDesigner();
   if (elements.length === 0) return null;
+  const [selected, setSelected] = useState<any[]>([])
   const [index, setIndex] = useState<number>(0)
   const [isResult, setIsResult] = useState<boolean>(false)
   const [isCorrect, setIsCorrect] = useState<boolean>(false)
   const [isFinally, setIsFinally] = useState<boolean>(false)
   const [answers, setAnswers] = useState<any[]>([])
-  
+
   const GetCurrentQuestion = () => {
     const element = elements[index]
-    return <TestComponents key={element.id} question={element} />
+    return <TestComponents key={element.id} question={element} selected={selected} setSelected={setSelected} result_view={isResult} />
   }
+
   const CheckAnswer = () => {
-    const answer_id = (elements[index] as SingleSelectionTestType).selected;
-    const element = elements[index] as SingleSelectionType
     let is_correct = false;
-    for (let index = 0; index < element.answers.length; index++) {
-      const answer = element.answers[index];
-      if (answer.id === answer_id) is_correct = answer.is_true ? true : false
+    const element = elements[index];
+    switch (element.type_id) {
+      case 1: {
+        if(selected.length === 0) break;
+        const answer_id = selected.pop();
+        const question = element as SingleSelectionType
+        for (let index = 0; index < question.answers.length; index++) {
+          const answer = question.answers[index];
+          if (answer.id === answer_id) is_correct = answer.is_true ? true : false
+        }
+      } break;
+      case 2: {
+        if(selected.length === 0) break;
+        const question = element as MultipleSelectionType
+        for (let index = 0; index < question.answers.length; index++) {
+          const element = question.answers[index];
+          if (element.is_true) {
+            if (selected.includes(element.id)) is_correct = true;
+            else { is_correct = false; break }
+          } else {
+            if (selected.includes(element.id)) { is_correct = false; break }
+            else is_correct = true;
+          }
+        }
+      } break;
     }
-    setAnswers([...answers, { question_id: element.id, question_type: element.type_id, is_correct, answer: answer_id }]);
+    setAnswers([...answers, { question_id: element.id, question_type: element.type_id, is_correct, answer: [...selected] }]);
+    setSelected([])
     setIsResult(true);
     setIsCorrect(is_correct);
   }
+
   const NextQuestion = () => {
     setIsResult(false)
     const nextIndex = index + 1
     if (nextIndex < elements.length) setIndex(nextIndex)
     else {
       setIsFinally(true)
-      console.log(answers)
     }
   }
 
@@ -77,17 +100,8 @@ export default function PreviewDialogButton() {
               )}
               {isResult && (
                 <div className='flex justify-between p-4 items-center'>
-                  {isCorrect ? <h2 className='font-bold text-2xl text-green-500'>Отлично</h2> : <>
-                    {/* {elements[index].type_id == ElementsType["Одиночный выбор"] && (
-                      <div>
-                        <h2 className='font-bold text-1xl text-red-500'>Правильный ответ:</h2>
-
-                        Вынести в компонент тест
-
-                        <div>{elements[index].answers[elements[index].answers.findIndex((i: any) => i.is_true)].text}</div>
-                      </div>
-                    )} */}
-                  </>}
+                  {isCorrect ? <h2 className='font-bold text-2xl text-green-500'>Отлично</h2> : 
+                  <h2 className='font-bold text-2xl text-red-500'>Неверно</h2>}
                   <Button onClick={() => {
                     if (!isResult) CheckAnswer();
                     else NextQuestion();

@@ -1,5 +1,5 @@
 'use client'
-import type { test, test_public, test_questions, type_test } from "@prisma/client";
+import type { test, test_public, test_questions, type_question } from "@prisma/client";
 import { useEffect } from "react";
 import { DndContext, MouseSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
 import PreviewButton from "@/components/tests/builder/preview-button";
@@ -9,7 +9,7 @@ import Designer from "@/components/tests/builder/designer";
 import SaveTestButton from "./save-test-button";
 import PublishTestButton from "./publish-test-button";
 
-export default function TestBuilder({ test, types }: { types:type_test[],test: test & {test_questions:test_questions[], test_public:test_public | null} }) {
+export default function TestBuilder({ test, types }: { types:type_question[],test: test & {test_questions:test_questions[], test_public:test_public | null} }) {
   const { setElements, setSelectedElement } = useDesigner();
 
   useEffect(() => {

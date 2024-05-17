@@ -1,12 +1,11 @@
 import TestBuilder from "@/components/tests/builder/test-builder";
-import TestWork from "@/components/tests/employee/test-work";
 import authConfig from "@/core/auth-config";
 import prisma from "@/core/db";
 import { getServerSession } from "next-auth";
 
 export default async function Page({params}:{params:{id:string}}) {
   const session = await getServerSession(authConfig)
-  const test = await prisma.test_public.findFirstOrThrow({where:{test_id:params.id}, include:{test:{include:{test_questions:true}}}})
+  const test = await prisma.test.findFirstOrThrow({where:{id:params.id, author_id:session?.user?.id}, include:{test_questions:true, test_public:true}})
   if (!test) throw new Error("Тестирование не найдено.");
-  return <TestWork questions={test.test.test_questions}/>
+  return ( <TestBuilder test={test} types={await prisma.type_question.findMany()}/> )
 }
