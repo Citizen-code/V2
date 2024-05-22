@@ -5,27 +5,28 @@ import Confetti from "react-confetti";
 import { BsArrowLeft, BsArrowRight } from "react-icons/bs";
 import TestComponents from "../builder/questions/test-components";
 import type { MultipleSelectionType, SingleSelectionType } from "@/types/questions";
-import type { result_questions, test_questions } from "@prisma/client";
+import type { employee_level, result_questions, test_questions, level } from "@prisma/client";
 import { redirect, useRouter } from "next/navigation";
 import { Progress } from "@/components/ui/progress";
 import { FaSpinner } from "react-icons/fa";
-import { CreateNewPassing, PassingQuestion } from "@/actions/tests";
+import { IsNewLevel, PassingQuestion } from "@/actions/tests";
 
-export default function TestPassing({ test_questions, results, result_id, test_id }: { test_questions: test_questions[], results: result_questions[], result_id: string, test_id: string }) {
+export default function ExamPassing({ test_questions, results, result_id, level_id }: { test_questions: test_questions[], results: result_questions[], result_id: string, level_id:number }) {
   const array = test_questions.filter(i => results.findIndex(r => r.question_id === i.id) === -1);
   const [questions, setQuestions] = useState<test_questions[]>(array)
-  const { back, push } = useRouter()
+  const { back } = useRouter()
   const [isFinally, setIsFinally] = useState<boolean>(questions.length === 0)
   const [selected, setSelected] = useState<any[]>([])
   const [loading, startTransition] = useTransition();
   const [index, setIndex] = useState<number>(0)
   const [progress, setProgress] = useState<number>(questions.length === 0 ? 100 : 0)
-  const [isResult, setIsResult] = useState<boolean>(false)
-  const [isCorrect, setIsCorrect] = useState<boolean>(false)
-  let answers:result_questions[] = results
+  //const [answers, setAnswers] = useState<result_questions[]>(results)
+  let answers:result_questions[] = results;
+  const [newLevel, setNewLevel] = useState<employee_level & {level:level} | undefined>(undefined)
+
   const GetCurrentQuestion = () => {
     const element = questions[index]
-    return <TestComponents key={element.id} question={element} selected={selected} setSelected={setSelected} result_view={isResult} />
+    return <TestComponents key={element.id} question={element} selected={selected} setSelected={setSelected} result_view={false} />
   }
   const CheckAnswer = async () => {
     let is_correct = false;
@@ -33,7 +34,7 @@ export default function TestPassing({ test_questions, results, result_id, test_i
     switch (element.type_id) {
       case 1: {
         if (selected.length === 0) break;
-        const answer_id = selected.pop();
+        const answer_id = selected[0];
         const question = element as SingleSelectionType
         for (let index = 0; index < question.answers.length; index++) {
           const answer = question.answers[index];
@@ -56,19 +57,26 @@ export default function TestPassing({ test_questions, results, result_id, test_i
       } break;
     }
     const result: result_questions = { result_id, question_id: element.id, is_correct, answer: [...selected] };
+    console.log('Ответ')
+    console.log(result)
     await PassingQuestion(result);
     answers.push(result);
+    console.log('Ответы')
+    console.log(answers)
     setSelected([])
-    setIsResult(true);
-    setIsCorrect(is_correct);
+    await NextQuestion();
   }
-  const NextQuestion = () => {
-    setIsResult(false)
+  const NextQuestion = async () => {
     const nextIndex = index + 1
     if (nextIndex < questions.length) setIndex(nextIndex)
     else {
+      console.log('Ответы')
+      console.log(answers)
       const temp = questions.filter(i => answers.findIndex(a => a.question_id === i.id) === -1);
-      if (temp.length === 0) setIsFinally(true)
+      if (temp.length === 0) {
+        setNewLevel(await IsNewLevel(level_id))
+        setIsFinally(true)
+      }
       else {
         setQuestions(temp)
         setIndex(0)
@@ -83,41 +91,29 @@ export default function TestPassing({ test_questions, results, result_id, test_i
       <div className="flex flex-grow justify-center items-center">
         <div className="flex flex-col">
           {!isFinally ? <>{GetCurrentQuestion()}
-            {!isResult && (
               <div className='flex justify-between p-4 items-center'>
-                <Button onClick={() => { NextQuestion() }}>Пропустить</Button>
+                <Button disabled={loading} onClick={() => { startTransition(NextQuestion) }}>Пропустить</Button>
                 <Button disabled={loading} onClick={() => {
-                  if (!isResult) startTransition(CheckAnswer)
-                  else NextQuestion();
+                  startTransition(CheckAnswer)
                 }}>Проверить {loading && <FaSpinner className="animate-spin px-1" />}</Button>
               </div>
-            )}
-            {isResult && (
-              <div className='flex justify-between p-4 items-center'>
-                {isCorrect ? <h2 className='font-bold text-2xl text-green-500'>Отлично</h2> :
-                  <h2 className='font-bold text-2xl text-red-500'>Неверно</h2>}
-                <Button onClick={() => {
-                  if (!isResult) CheckAnswer();
-                  else NextQuestion();
-                }}>Далее</Button>
-              </div>
-            )}</> :
+            </> :
             <div>
               {typeof window !== 'undefined' && <Confetti width={window.innerWidth} height={window.innerHeight} recycle={false} numberOfPieces={1000} />}
               <div className="flex flex-col items-center justify-center h-full w-full">
-                <div className="max-w-md">
+                <div className='max-w-lg'>
                   <h1 className="text-center text-4xl font-bold text-primary border-b pb-2 mb-5">
-                    Тестирование пройдено
+                    {answers.filter(i => i.is_correct).length/ answers.length * 100 >= 90 ? 'Экзаменационное тестирование пройдено' : 'Экзаменационное тестирование не пройдено'}
                   </h1>
-                  <div>{`Вы правильно ответили на ${answers.filter(i => i.is_correct).length} из ${answers.length} вопросов.`}</div>
+                  <div className='text-center'>{`Вы ответили правильно на ${answers.filter(i => i.is_correct).length / answers.length * 100}% всех вопросов.`}</div>
+                  {newLevel && <div className='rounded-md border p-4 m-4'> 
+                    <h3 className="font-bold">Вам был присвоен уровень {newLevel.level.name}</h3>
+                    <div className='text-sm text-muted-foreground'>Входе успешного прохождения всех доступных экзаменационных тестирований вам был присвоен уровень {newLevel.level.name}</div>
+                  </div>}
                   <div className="flex justify-between mt-3">
                     <Button onClick={() => back()} variant={"link"} className="gap-2">
                       <BsArrowLeft />
                       Вернуться назад
-                    </Button>
-                    <Button onClick={() => startTransition(async () => { redirect(`/employee/tests/${await CreateNewPassing(test_id)}`) })} variant={"link"} className="gap-2">
-                      Пройти заново
-                      <BsArrowRight />
                     </Button>
                   </div>
                 </div>

@@ -1,7 +1,9 @@
 'use client'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from '@/components/ui/input'
 import { FaSpinner } from "react-icons/fa";
@@ -12,7 +14,7 @@ import { useEffect, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { category, level, result_questions, test, test_public, test_result, test_visited } from '@prisma/client';
+import { category, level, result_questions, test, test_public, test_result, test_visited, employee, employee_level } from '@prisma/client';
 import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons';
 import { CreateNewPassing, GetEmployeeTests } from '@/actions/tests';
 import { Badge } from '@/components/ui/badge';
@@ -32,9 +34,10 @@ const SearchSchema = z.object({
   type_id: z.number(),
 })
 
-export default function EmployeeTests({ categories, levels }: { categories: category[], levels: level[] }) {
+export default function EmployeeTests({ categories, levels, employee_levels }: { categories: category[], levels: level[], employee_levels: employee_level[] }) {
   const { push } = useRouter()
-  const [tests_public, setTestsPublic] = useState<(test_public & { test: test & { category: category | undefined, level: level | undefined, test_result: (test_result & { _count: { result_questions: number }, result_questions: result_questions[] })[], _count: { test_visited: number, test_questions: number, test_result: number } } })[]>([])
+  const id_levels = employee_levels.map(i => i.level_id);
+  const [tests_public, setTestsPublic] = useState<(test_public & { test: test & { category: category | undefined, level: level | undefined, employee: employee | undefined, test_result: (test_result & { _count: { result_questions: number }, result_questions: result_questions[] })[], _count: { test_visited: number, test_questions: number, test_result: number } } })[]>([])
   const [loading, startTransition] = useTransition();
   const [categoryOpen, setCategoryOpen] = useState(false)
   const [levelOpen, setLevelOpen] = useState(false)
@@ -175,13 +178,14 @@ export default function EmployeeTests({ categories, levels }: { categories: cate
         {tests_public.length !== 0 && (<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {tests_public.map((el) => {
             const test = el.test;
+            const is_access = ((id_levels.length === 0 ? 1 : Math.max(...id_levels) + 1) >= test.level_id);
             return (<Card className='flex flex-col flex-grow'>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 justify-between">
                   <span className="truncate font-bold">{test.name}</span>
                   <div className='flex gap-2 flex-row-reverse'>
                     <div className='gap-2 flex'>
-                      {test.level && <Badge variant={'secondary'}>{test.level.name}</Badge>}
+                      {test.level && <Badge variant={is_access ? 'secondary' : 'destructive'}>{test.level.name}</Badge>}
                     </div>
                     <div className='gap-2 flex'>
                       {test.test_result.findIndex(i => Math.round(i.result_questions.map(u => u.is_correct).length / test._count.test_questions * 100) >= 90) !== -1 ? <Badge variant={'destructive'} className="bg-green-700 hover:bg-green-800">Пройдено</Badge> :
@@ -208,16 +212,70 @@ export default function EmployeeTests({ categories, levels }: { categories: cate
                   </span>
                 </CardDescription>
               </CardHeader>
-              {test.description && <CardContent className="truncate text-sm text-muted-foreground">{test.description}</CardContent>}
+              <CardContent/>
+              {/* {test.description && <CardContent className="truncate text-sm text-muted-foreground">{test.description}</CardContent>} */}
               <CardFooter className='mt-auto'>
-                {(test.test_result.findIndex(i => i._count.result_questions !== test._count.test_questions) === -1) ?
-                  <Button disabled={loading} className="w-full mt-2 text-md gap-4" onClick={() => startTransition(async () => { push(`/employee/tests/${await CreateNewPassing(el.test_id)}`) })}>
-                    Пройти тестирование {loading && <FaSpinner className="animate-spin px-1" />}
-                  </Button> :
-                  <Button variant={'destructive'} disabled={loading} className="w-full mt-2 text-md gap-4" onClick={() => startTransition(async () => { push(`/employee/tests/${test.test_result.find(i => i._count.result_questions !== test._count.test_questions)?.id}`) })}>
-                    Продолжить тестирование {loading && <FaSpinner className="animate-spin px-1" />}
-                  </Button>
-                }
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button className="w-full mt-2 text-md gap-4">
+                      Подробная информация
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="flex flex-col">
+                    <DialogHeader>
+                      <DialogTitle>{test.name}</DialogTitle>
+                    </DialogHeader>
+                    <div className="block">
+                      {test.description && <div className="text-muted-foreground break-words"><span className='text-lg text-primary pe-2'>Описание:</span>{test.description}</div>}
+                      <div className='flex flex-row gap-2 items-center'>
+                        <h3 className='text-lg'>Уровень:</h3>
+                        <div className="text-muted-foreground">{test.level?.name}</div>
+                      </div>
+                      <div className='flex flex-row gap-2 items-center'>
+                        <h3 className='text-lg'>Категория:</h3>
+                        <div className="text-muted-foreground">{test.category?.name}</div>
+                      </div>
+                      <div className='flex flex-row gap-2 items-center'>
+                        <h3 className='text-lg'>Количество вопросов:</h3>
+                        <div className="text-muted-foreground">{test._count.test_questions}</div>
+                      </div>
+                      <div className='flex flex-row gap-2 items-center'>
+                        <h3 className='text-lg'>Автор:</h3>
+                        <div className="text-muted-foreground">{`${test.employee?.surname} ${test.employee?.name[0]}. ${test.employee?.patronymic[0] + '.'}`}</div>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      {(test.test_result.findIndex(i => i._count.result_questions !== test._count.test_questions) === -1) ?
+                        (is_access ?
+                          <Button disabled={loading} className="w-full mt-2 text-md gap-4" onClick={() => startTransition(async () => { push(`/employee/tests/${await CreateNewPassing(el.test_id)}`) })}>
+                            Пройти тестирование {loading && <FaSpinner className="animate-spin px-1" />}
+                          </Button> :
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button disabled={loading} className="w-full mt-2 text-md gap-4" >
+                                Пройти тестирование {loading && <FaSpinner className="animate-spin px-1" />}
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Вы точно хотите пройти тестирование?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Данное тестирование превышает ваш текущий уровень. Рекомендуется проходить тестирования не превышающие ваш текущий уровень
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Отменить</AlertDialogCancel>
+                                <AlertDialogAction disabled={loading} onClick={() => startTransition(async () => { push(`/employee/tests/${await CreateNewPassing(el.test_id)}`) })}>Продолжить {loading && <FaSpinner className="animate-spin px-1" />}</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>) :
+                        <Button variant={'destructive'} disabled={loading} className="w-full mt-2 text-md gap-4" onClick={() => startTransition(async () => { push(`/employee/tests/${test.test_result.find(i => i._count.result_questions !== test._count.test_questions)?.id}`) })}>
+                          Продолжить тестирование {loading && <FaSpinner className="animate-spin px-1" />}
+                        </Button>
+                      }
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </CardFooter>
             </Card>
             )
@@ -227,6 +285,7 @@ export default function EmployeeTests({ categories, levels }: { categories: cate
         {tests_public.length === 0 && (
           <div className="flex flex-col justify-center items-center flex-grow gap-4 pt-5">
             <h2 className="text-2xl">По вашему запросу не было найдено ни одного тестирования.</h2>
+            <Button onClick={() => { form.reset(data); load() }}>Сбросить параметры</Button>
           </div>
         )}
       </>)}

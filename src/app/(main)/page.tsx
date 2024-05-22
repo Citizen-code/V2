@@ -8,6 +8,7 @@ export default async function Page() {
     <>
       {role === Role.teacher && <TeacherProfile/>}
       {role === Role.employee && <EmployeeProfile/>}
+      {role === Role.admin && <div>Админка</div>}
     </>
   )
 }

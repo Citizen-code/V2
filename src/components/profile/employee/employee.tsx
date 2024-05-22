@@ -16,7 +16,7 @@ import Layout from "@/app/(main)/employee/layout";
 export default async function EmployeeProfile() {
   const session = await getServerSession(authConfig)
   const user = await prisma.employee.findFirstOrThrow({ where: { id: session?.user?.id }, include: { employee_level: { include: { level: true } }, employee_position: { include: { position: true } } } })
-  const employee_level = user.employee_level?.reverse().pop();
+  const employee_level = user.employee_level.sort(i => i.level_id).pop()
   const data = await GetStats(session?.user?.id);
 
   return (
@@ -39,7 +39,7 @@ export default async function EmployeeProfile() {
               <StatsCard
                 title="Текущий уровень языка"
                 icon={<HiCursorClick className="text-red-600" />}
-                helperText={employee_level ? `Дата получения ${employee_level?.date}` : 'Для получения пройдите тестирования'}
+                helperText={employee_level ? `Дата получения ${employee_level?.date.toLocaleDateString()}` : 'Для получения пройдите тестирования'}
                 value={employee_level?.level.name?.toLocaleString() ?? 'Отсутствует'}
                 className="shadow-md shadow-red-600"
               />

@@ -17,12 +17,12 @@ export function ResultsTable({ data }: { data: any[] }) {
     { accessorFn: (row => row.date.toLocaleString().slice(0, 10)), header: 'Дата начала' },
     {
       accessorFn: (row => {
-        if (row.test._count.test_questions !== row._count.result_questions) return 'Тестирование не окончено'
+        if (row.test._count.test_questions !== row._count.result_questions) return 'Не завершено'
         else return Math.round(((row.result_questions.filter((i: any) => i.is_correct).length / row.test._count.test_questions) * 100))
       }), header: 'Результат',
       cell: (props) => {
         const value = props.getValue();
-        if(value === 'Тестирование не окончено') return <Badge variant={'destructive'}>{value}</Badge>
+        if(value === 'Не завершено') return <Badge variant={'destructive'}>{value}</Badge>
         if(value <= 49) return <Badge variant={'destructive'}>{value}%</Badge>
         if(value <= 89) return <Badge variant={'destructive'} className="bg-yellow-700  hover:bg-yellow-800">{value}%</Badge>
         else return <Badge variant={'destructive'} className="bg-green-700  hover:bg-green-800">{value}%</Badge>

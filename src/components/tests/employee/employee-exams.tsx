@@ -25,6 +25,7 @@ import { VscPass } from "react-icons/vsc";
 import { useTransition } from "react";
 import { useRouter } from 'next/navigation';
 import { Switch } from '@/components/ui/switch';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export type SearchSchemaType = z.infer<typeof SearchSchema>;
 const SearchSchema = z.object({
@@ -36,6 +37,7 @@ const SearchSchema = z.object({
 })
 
 export default function EmployeeExams({ categories, levels, employee_levels }: { categories: category[], levels: level[], employee_levels: employee_level[] }) {
+  //if(typeof localStorage === 'undefined') return null
   const { push } = useRouter()
   const id_levels = employee_levels.map(i => i.level_id);
   const [tests_public, setTestsPublic] = useState<(test_public & { test: test & { category: category | undefined, level: level | undefined, employee: employee | undefined, test_result: (test_result & { _count: { result_questions: number }, result_questions: result_questions[] })[], _count: { test_visited: number, test_questions: number, test_result: number } } })[]>([])
@@ -43,7 +45,9 @@ export default function EmployeeExams({ categories, levels, employee_levels }: {
   const [categoryOpen, setCategoryOpen] = useState(false)
   const [levelOpen, setLevelOpen] = useState(false)
   const [loadingItems, setLoadingItems] = useState(false)
-  const data = { text: '', category_id: -1, level_id: -1, type_id: 2, is_access: false }
+  let data = { text: '', category_id: -1, level_id: -1, type_id: 2, is_access: false }
+  //let value = localStorage.getItem('exams_employee_params');
+  //if(value !== null) data = JSON.parse(value)
   const form = useForm<SearchSchemaType>({
     resolver: zodResolver(SearchSchema),
     mode: 'onSubmit',
@@ -58,13 +62,14 @@ export default function EmployeeExams({ categories, levels, employee_levels }: {
   useEffect(() => form.reset(data), [form])
   async function applyChanges(values: SearchSchemaType) {
     setLoadingItems(true)
+    //localStorage.setItem('exams_employee_params', JSON.stringify(values))
     setTestsPublic(await GetEmployeeExams(values))
     setLoadingItems(false)
   }
   return (
     <div className="container pt-4">
       <div className='flex justify-between'>
-        <h2 className="text-4xl font-bold col-span-2">Тестирования</h2>
+        <h2 className="text-4xl font-bold col-span-2">Экзаменационные тестирования</h2>
         <Sheet>
           <SheetTrigger asChild>
             <Button variant='default'>Параметры отображения</Button>
@@ -188,8 +193,8 @@ export default function EmployeeExams({ categories, levels, employee_levels }: {
         {tests_public.length !== 0 && (<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {tests_public.map((el) => {
             const test = el.test;
-            const is_access = id_levels.includes(test.level_id);
-            const is_complete = test.test_result.findIndex(i => i.result_questions.map(u => u.is_correct).length === test._count.test_questions) !== -1;
+            const is_access = ((id_levels.length === 0 ? 1 : Math.max(...id_levels) + 1) >= test.level_id);
+            const is_complete = test.test_result.findIndex(i => ((i.result_questions.filter(u => u.is_correct).length / test._count.test_questions * 100) >= 90)) !== -1;
             return (<Card className='flex flex-col flex-grow'>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 justify-between">
@@ -259,12 +264,17 @@ export default function EmployeeExams({ categories, levels, employee_levels }: {
                       </div>
                     </div>
                     <DialogFooter>
-                      {(test.test_result.findIndex(i => i._count.result_questions !== test._count.test_questions) === -1) ?
-                        <Button disabled={loading || !is_access} className="w-full mt-2 text-md gap-4" onClick={() => startTransition(async () => { push(`/employee/tests/${await CreateNewPassing(el.test_id)}`) })}>
-                          {is_access ? 'Пройти экзаменационное тестирование' : `Необходимо получить уровень ${test.level?.name}`} {loading && <FaSpinner className="animate-spin px-1" />}
+                      {is_access && ((test.test_result.findIndex(i => i._count.result_questions !== test._count.test_questions) === -1) ?
+                        <Button disabled={loading} className="w-full mt-2 text-md gap-4" onClick={() => startTransition(async () => { push(`/employee/exams/${await CreateNewPassing(el.test_id)}`) })}>
+                          Пройти экзаменационное тестирование {loading && <FaSpinner className="animate-spin px-1" />}
                         </Button> :
-                        <Button variant={'destructive'} disabled={loading} className="w-full mt-2 text-md gap-4" onClick={() => startTransition(async () => { push(`/employee/tests/${test.test_result.find(i => i._count.result_questions !== test._count.test_questions)?.id}`) })}>
+                        <Button variant={'destructive'} disabled={loading} className="w-full mt-2 text-md gap-4" onClick={() => startTransition(async () => { push(`/employee/exams/${test.test_result.find(i => i._count.result_questions !== test._count.test_questions)?.id}`) })}>
                           Продолжить экзаменационное тестирование {loading && <FaSpinner className="animate-spin px-1" />}
+                        </Button>
+                      )}
+                      {!is_access &&
+                        <Button disabled={loading || !is_access} className="w-full mt-2 text-md gap-4">
+                          {`Необходимо получить уровень ${levels.find(i => i.id === test.level_id - 1)?.name}`} {loading && <FaSpinner className="animate-spin px-1" />}
                         </Button>
                       }
                     </DialogFooter>
@@ -279,6 +289,7 @@ export default function EmployeeExams({ categories, levels, employee_levels }: {
         {tests_public.length === 0 && (
           <div className="flex flex-col justify-center items-center flex-grow gap-4 pt-5">
             <h2 className="text-2xl">По вашему запросу не было найдено ни одного экзаменационного тестирования.</h2>
+            <Button onClick={() => {form.reset(data); load()}}>Сбросить параметры</Button>
           </div>
         )}
       </>)}

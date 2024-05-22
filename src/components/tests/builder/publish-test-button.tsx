@@ -7,11 +7,27 @@ import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/use-toast";
 import useDesigner from "@/hooks/useDesigner";
 import { PublishTest, UpdateTest } from "@/actions/tests";
+import { MultipleSelectionType, SingleSelectionType } from "@/types/questions";
 
 export default function PublishTestButton({ id }: { id: string }) {
   const [loading, startTransition] = useTransition();
-  const { elements } = useDesigner()
   const router = useRouter();
+  const { elements } = useDesigner()
+  if (elements.length === 0) return null;
+  if (elements.findIndex(i => {
+    switch (i.type_id) {
+      case 1: {
+        const question = i as SingleSelectionType
+        return question.question.text === '' || question.answers.findIndex(y => y.text === '') !== -1
+      }
+      case 2: {
+        const question = i as MultipleSelectionType
+        return question.question.text === '' || question.answers.findIndex(y => y.text === '') !== -1
+      }
+      default:
+        return true
+    }
+  }) !== -1) return null;
 
   async function publishForm() {
     try {
