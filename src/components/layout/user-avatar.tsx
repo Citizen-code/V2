@@ -5,14 +5,27 @@ import { CiLogout } from "react-icons/ci";
 import { CgProfile } from "react-icons/cg";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useRouter } from 'next/navigation';
+import { Role } from '@/utility/check-role';
 
-export default function UserAvatar() {
+export default function UserAvatar({role}:{role:Role}) {
   const {push} = useRouter();
   
   const session = useSession().data;
   if (!session) return null;
   
   const names = session.user?.name?.split(' ') ?? ''
+  let url = '/'
+  switch (role) {
+    case Role.admin:
+      url = '/admin/profile'
+    break;
+    case Role.employee:
+      url = '/employee/profile'
+    break;
+    case Role.teacher:
+      url = '/teacher/profile'
+    break;
+  }
 
   return (
     <DropdownMenu>
@@ -26,7 +39,7 @@ export default function UserAvatar() {
         <DropdownMenuLabel>{`${names[0]} ${names[1]}`}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => push('/')}>
+          <DropdownMenuItem onClick={() => push(url)}>
             Профиль
             <DropdownMenuShortcut><CgProfile/></DropdownMenuShortcut>
           </DropdownMenuItem>

@@ -12,7 +12,6 @@ import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CategoryRadar from "./category-radar";
-import Layout from "@/app/(main)/teacher/layout";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 export default async function TeacherProfile() {
@@ -21,22 +20,21 @@ export default async function TeacherProfile() {
   const data = await GetTestsStats(session?.user?.id);
 
   return (
-    <Layout>
-      <div className='w-full flex flex-col'>
-        <div className='w-full flex'>
-          <div className='flex my-6 ms-4'>
-            <Image className="block dark:hidden rounded-lg" src={user.image ?? '/im-missing-light.svg'} alt="Изображение профиля" width={300} height={75} />
-            <Image className="hidden dark:block rounded-lg" src={user.image ?? '/im-missing-dark.svg'} alt="Изображение профиля" width={300} height={75} />
-          </div>
-          <Card className='flex flex-col overflow-x-auto m-6 p-6 w-full'>
-            <CardHeader className='p-2'>
-              <CardTitle className='font-bold text-3xl'>
-                {`${user.surname} ${user.name} ${user.patronymic}`}
-              </CardTitle>
-              <div className='my-2 flex flex-wrap'>{user.employee_position.map((el) => <Badge key={el.position_id} variant={el.position_id === 1 ? 'destructive' : 'default'}>{el.position.name}</Badge>)}</div>
-            </CardHeader>
-            <Separator />
-            <ScrollArea>
+    <div className='w-full flex flex-col'>
+      <div className='w-full flex'>
+        <div className='flex my-6 ms-4'>
+          <Image className="block dark:hidden rounded-lg" src={user.image ?? '/im-missing-light.svg'} alt="Изображение профиля" width={300} height={75} />
+          <Image className="hidden dark:block rounded-lg" src={user.image ?? '/im-missing-dark.svg'} alt="Изображение профиля" width={300} height={75} />
+        </div>
+        <Card className='flex flex-col overflow-x-auto m-6 p-6 w-full'>
+          <CardHeader className='p-2'>
+            <CardTitle className='font-bold text-3xl'>
+              {`${user.surname} ${user.name} ${user.patronymic}`}
+            </CardTitle>
+            <div className='my-2 flex flex-wrap'>{user.employee_position.map((el) => <Badge key={el.position_id} variant={el.position_id === 1 ? 'destructive' : 'default'}>{el.position.name}</Badge>)}</div>
+          </CardHeader>
+          <Separator />
+          <ScrollArea>
             <CardContent className="px-1 py-1 pb-3 overflow-x-auto mt-2 gap-4 flex">
               <StatsCard
                 title="Создано тестирований тестирований"
@@ -68,21 +66,20 @@ export default async function TeacherProfile() {
               />
             </CardContent>
             <div className='mt-2'>
-              <ScrollBar orientation='horizontal'/>
+              <ScrollBar orientation='horizontal' />
             </div>
-            </ScrollArea>
-          </Card>
-        </div>
-        <Tabs className='px-4' defaultValue="category">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="category">Категории</TabsTrigger>
-          </TabsList>
-          <TabsContent className='min-h-[100px]' value="category">
-            <CategoryRadar data={data.categories} />
-          </TabsContent>
-        </Tabs>
+          </ScrollArea>
+        </Card>
       </div>
-    </Layout>
+      <Tabs className='px-4' defaultValue="category">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="category">Категории</TabsTrigger>
+        </TabsList>
+        <TabsContent className='min-h-[100px]' value="category">
+          <CategoryRadar data={data.categories} />
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }
 

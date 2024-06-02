@@ -17,7 +17,7 @@ import { category, level } from "@prisma/client";
 import { CreateTest } from "@/actions/tests";
 
 const testSchema = z.object({
-  name: z.string({ required_error: 'Обязательное поле' }).min(4),
+  name: z.string({ required_error: 'Обязательное поле' }).min(4, 'Обязательное поле'),
   description: z.string().optional(),
   level_id: z.number({ required_error: 'Обязательное поле' }),
   category_id: z.number({ required_error: 'Обязательное поле' }),

@@ -144,9 +144,59 @@ export async function IsNewLevel(level_id:number) {
   else return await prisma.employee_level.create({data:{employee_id:session.user.id, level_id}, include:{level:true}})
 }
 
-
 export async function PassingQuestion(result_questions: result_questions) {
   const { is_correct, result_id, question_id } = result_questions;
   const answer = (result_questions.answer as Prisma.InputJsonValue)
   return await prisma.result_questions.create({ data: { is_correct, answer: answer, result_id, question_id } })
+}
+
+export async function GetPagesTestsList({count_items = 10}:{count_items?:number }) {
+  const count = Math.ceil(await prisma.test.count() / count_items);
+  return count === 0 ? 1 : count
+}
+
+export async function GetTestsList({page}:{page:number}) {
+  return await prisma.test.findMany({
+    include:{
+      category:true,
+      type_test:true,
+      level:true,
+      test_public:true,
+      employee:true,
+      _count:{
+        select:{
+          test_questions:true,
+          test_result:true,
+        }
+      }
+    },
+    skip:10 * (page - 1),
+    take:10
+  })
+}
+
+export async function DeleteTest(id:string) {
+  const action:any[] = []
+  action.push(prisma.result_questions.deleteMany({
+    where:{test_result:{test_id:id}}
+  }))
+  action.push(prisma.test_result.deleteMany({
+    where:{test_id:id}
+  }))
+  action.push(prisma.test_visited.deleteMany({
+    where:{test_id:id}
+  }))
+  action.push(prisma.test_questions.deleteMany({
+    where:{test_id:id}
+  }))
+  action.push(prisma.test.deleteMany({
+    where:{id}
+  }))
+  await prisma.$transaction(action) 
+}
+
+export async function EditTest(params:testSchemaType, id:string) {
+  await prisma.test.update({where:{id:id}, data:{
+    ...params
+  }})
 }

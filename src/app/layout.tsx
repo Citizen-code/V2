@@ -1,5 +1,5 @@
 import "./globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/providers/theme-provider";
@@ -13,6 +13,12 @@ export const metadata: Metadata = {
   description: "Платформа для обучения сотрудников иностранным языкам",
 };
 
+export const viewport: Viewport ={
+ initialScale:0.7,
+ maximumScale:1,
+ width:'device-width' 
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -25,7 +31,7 @@ export default function RootLayout({
           <DesignerContextProvider>
             <ThemeProvider attribute="class" defaultTheme='dark' enableSystem disableTransitionOnChange>
               {children}
-              <Toaster/>
+              <Toaster />
             </ThemeProvider>
           </DesignerContextProvider>
         </AuthProvider>
