@@ -18,13 +18,16 @@ import { toast } from "@/components/ui/use-toast";
 import Loading from "@/app/(main)/loading";
 import TestEdit from "./test-edit";
 import { DeleteTest, GetPagesTestsList, GetTestsList } from "@/actions/tests";
+import Pages from "@/utility/pages";
+import { useRouter } from 'next/navigation'
 
-export default function TestsList({ levels, categories }: { levels: level[], categories: category[] }) {
+export default function TestsList({ levels, categories, type_test }: { levels: level[], categories: category[], type_test:type_test[] }) {
+  const { push } = useRouter();
   const [open, setOpen] = useState<boolean>(false);
   const [loadingItems, setLoadingItems] = useState(false)
   const [alert, setAlert] = useState<boolean>(false);
-  const [selectedTest, setSelectedTest] = useState<(test & {level:level, category:category, type_test:type_test, test_public:test_public | null, employee:employee, _count:{test_questions:number,test_result:number}}) | undefined>(undefined);
-  const columns: ColumnDef<(test & {level:level, category:category, type_test:type_test, test_public:test_public | null, employee:employee, _count:{test_questions:number,test_result:number}}), any>[] = [
+  const [selectedTest, setSelectedTest] = useState<(test & { level: level, category: category, type_test: type_test, test_public: test_public | null, employee: employee, _count: { test_questions: number, test_result: number } }) | undefined>(undefined);
+  const columns: ColumnDef<(test & { level: level, category: category, type_test: type_test, test_public: test_public | null, employee: employee, _count: { test_questions: number, test_result: number } }), any>[] = [
     { accessorKey: 'id', header: '№' },
     { accessorKey: 'name', header: 'Наименование' },
     { accessorKey: 'category.name', header: 'Категория' },
@@ -32,9 +35,11 @@ export default function TestsList({ levels, categories }: { levels: level[], cat
     { accessorKey: 'type_test.name', header: 'Тип' },
     { accessorKey: '_count.test_questions', header: 'Кол. вопросов' },
     { accessorKey: '_count.test_result', header: 'Кол. прохождений' },
-    { accessorFn: (row => { 
-      return row.test_public === null ? "Черновик" : row.test_public?.date.toLocaleDateString()
-    }), header: 'Опубликовано' },
+    {
+      accessorFn: (row => {
+        return row.test_public === null ? "Черновик" : row.test_public?.date.toLocaleDateString()
+      }), header: 'Опубликовано'
+    },
     { accessorFn: (row => { const el = row.employee; return `${el.surname} ${el.name[0]}.${el.patronymic[0]}.` }), header: 'Автор' },
     {
       id: "actions",
@@ -53,7 +58,7 @@ export default function TestsList({ levels, categories }: { levels: level[], cat
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Действия</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {/* <DropdownMenuItem>Подробнее о тестировании</DropdownMenuItem> */}
+              {data.test_public && <DropdownMenuItem onClick={() => push(`/admin/tests/${data.id}`)}>Подробнее о тестировании</DropdownMenuItem>}
               <DropdownMenuItem onClick={() => {
                 setSelectedTest(data)
                 setOpen(true)
@@ -69,7 +74,7 @@ export default function TestsList({ levels, categories }: { levels: level[], cat
     },
   ]
 
-  const [data, setData] = useState<(test & {level:level, category:category, type_test:type_test, test_public:test_public | null, employee:employee, _count:{test_questions:number,test_result:number}})[]>([]);
+  const [data, setData] = useState<(test & { level: level, category: category, type_test: type_test, test_public: test_public | null, employee: employee, _count: { test_questions: number, test_result: number } })[]>([]);
   const table = useReactTable({ data, columns, getCoreRowModel: getCoreRowModel() })
   const [search, setSearch] = useState<string>("");
   const [page, setPage] = useState<number>(1);
@@ -78,29 +83,13 @@ export default function TestsList({ levels, categories }: { levels: level[], cat
   const load = async () => {
     setLoadingItems(true)
     setAllPage(await GetPagesTestsList({}))
-    setData(await GetTestsList({page}))
+    setData(await GetTestsList({ page }))
     setLoadingItems(false)
   }
 
   useEffect(() => {
     load();
   }, [page, search])
-
-  const getPages = () => {
-    const list: number[] = [];
-    if (allPage > 3) {
-      for (let index = page <= 3 ? 2 : page - 2; index < (page < allPage - 3 ? page + 3 : allPage); index++) {
-        list.push(index);
-      }
-    } else {
-      if (allPage >= 2) {
-        for (let index = 2; index < allPage; index++) {
-          list.push(index);
-        }
-      }
-    }
-    return list;
-  }
 
   async function Delete(id: string) {
     try {
@@ -127,7 +116,7 @@ export default function TestsList({ levels, categories }: { levels: level[], cat
       {/* <UserAdd levels={levels} positions={positions} load={load} /> */}
     </div>
     <Separator className="my-6" />
-    <TestEdit levels={levels} open={open} setOpen={setOpen} selectedTest={selectedTest} load={load} />
+    <TestEdit levels={levels} categories={categories} type_test={type_test} open={open} setOpen={setOpen} selectedTest={selectedTest} load={load} />
     {selectedTest !== undefined &&
       <AlertDialog open={alert} onOpenChange={setAlert}>
         <AlertDialogContent>
@@ -171,22 +160,27 @@ export default function TestsList({ levels, categories }: { levels: level[], cat
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-    {loadingItems && <Loading />}
-    {!loadingItems && <>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <TableHead key={header.id}>
+                  {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                </TableHead>
+              ))}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody>
+          {loadingItems &&
+            <TableRow>
+              <TableCell colSpan={columns.length} className="h-24 text-center">
+                <Loading />
+              </TableCell>
+            </TableRow>}
+          {!loadingItems && <>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
@@ -204,31 +198,11 @@ export default function TestsList({ levels, categories }: { levels: level[], cat
                 </TableCell>
               </TableRow>
             )}
-          </TableBody>
-        </Table>
-      </div>
-      {allPage !== 1 && data.length !== 0 && <Pagination className="p-1">
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationLink isActive={page === 1} role='button' onClick={() => setPage(1)}>{1}</PaginationLink>
-          </PaginationItem>
-          {page > 3 && <PaginationItem>
-            <PaginationEllipsis />
-          </PaginationItem>}
-          {getPages().map(i =>
-            <PaginationItem>
-              <PaginationLink isActive={page === i} role='button' onClick={() => setPage(i)}>{i}</PaginationLink>
-            </PaginationItem>
-          )}
-          {page < allPage - 3 && <PaginationItem>
-            <PaginationEllipsis />
-          </PaginationItem>}
-          <PaginationItem>
-            <PaginationLink isActive={page === allPage} role='button' onClick={() => setPage(allPage)}>{allPage}</PaginationLink>
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>}
-    </>}
+          </>}
+        </TableBody>
+      </Table>
+    </div>
+    {allPage !== 1 && data.length !== 0 && <Pages page={page} allPage={allPage} setPage={setPage} />}
   </div >
 }
 

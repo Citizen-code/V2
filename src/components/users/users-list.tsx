@@ -17,6 +17,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescript
 import { AlertDialogCancel } from "@radix-ui/react-alert-dialog";
 import { toast } from "../ui/use-toast";
 import Loading from "@/app/(main)/loading";
+import Pages from "@/utility/pages";
 
 export default function UsersList({ levels, positions }: { levels: level[], positions: position[] }) {
   const [open, setOpen] = useState<boolean>(false);
@@ -101,22 +102,6 @@ export default function UsersList({ levels, positions }: { levels: level[], posi
     load();
   }, [page, search])
 
-  const getPages = () => {
-    const list: number[] = [];
-    if (allPage > 3) {
-      for (let index = page <= 3 ? 2 : page - 2; index < (page < allPage - 3 ? page + 3 : allPage); index++) {
-        list.push(index);
-      }
-    } else {
-      if (allPage >= 2) {
-        for (let index = 2; index < allPage; index++) {
-          list.push(index);
-        }
-      }
-    }
-    return list;
-  }
-
   async function Delete(id: string) {
     try {
       await DeleteUser(id)
@@ -186,63 +171,46 @@ export default function UsersList({ levels, positions }: { levels: level[], posi
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-    {loadingItems && <Loading />}
-    {!loadingItems && <>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <TableHead key={header.id}>
+                  {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                </TableHead>
+              ))}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody>
+          {loadingItems &&
+            <TableRow>
+              <TableCell colSpan={columns.length} className="h-24 text-center">
+                <Loading />
+              </TableCell>
+            </TableRow>}
+          {!loadingItems && <>{table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map((row) => (
+              <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
                 ))}
               </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  Нет результатов.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      {allPage !== 1 && data.length !== 0 && <Pagination className="p-1">
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationLink isActive={page === 1} role='button' onClick={() => setPage(1)}>{1}</PaginationLink>
-          </PaginationItem>
-          {page > 3 && <PaginationItem>
-            <PaginationEllipsis />
-          </PaginationItem>}
-          {getPages().map(i =>
-            <PaginationItem>
-              <PaginationLink isActive={page === i} role='button' onClick={() => setPage(i)}>{i}</PaginationLink>
-            </PaginationItem>
-          )}
-          {page < allPage - 3 && <PaginationItem>
-            <PaginationEllipsis />
-          </PaginationItem>}
-          <PaginationItem>
-            <PaginationLink isActive={page === allPage} role='button' onClick={() => setPage(allPage)}>{allPage}</PaginationLink>
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>}
-    </>}
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={columns.length} className="h-24 text-center">
+                Нет результатов.
+              </TableCell>
+            </TableRow>
+          )}</>}
+        </TableBody>
+      </Table>
+    </div>
+    {allPage !== 1 && data.length !== 0 && <Pages page={page} allPage={allPage} setPage={setPage} />}
   </div >
 }

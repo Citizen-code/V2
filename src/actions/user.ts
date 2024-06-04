@@ -93,3 +93,12 @@ export async function DeleteUser(id:string) {
   action.push(prisma.employee.delete({where:{id}}))
   await prisma.$transaction(action) 
 }
+
+export async function GetLevelsEmployee() {
+  const session = await getServerSession(authConfig)
+  if (session?.user?.id === undefined) throw new Error('Не авторизованный пользователь')
+  return await prisma.employee_level.findMany({
+    where:{employee_id:session.user.id},
+    include:{level:true}
+  })
+}

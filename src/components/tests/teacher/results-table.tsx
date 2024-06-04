@@ -6,25 +6,19 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
-import { GetCountEmployeeResults, GetEmployeeResults } from "@/actions/tests";
-import Pages from "@/utility/pages";
+import { GetCountPagesEmployeeResults, GetEmployeeResultsTest } from '@/actions/tests'
 import Loading from "@/app/(main)/loading";
 import { Input } from "@/components/ui/input";
+import Pages from "@/utility/pages";
 
-export function ResultsTable() {
+export function ResultsTable({ test }: { test: string }) {
   const columns: ColumnDef<any, any>[] = [
-    { accessorKey: 'id', header: '№', enableSorting: true, enableResizing: true },
-    { accessorKey: 'test.name', header: 'Тестирование' },
-    { accessorKey: 'test.category.name', header: 'Категория' },
-    { accessorKey: 'test.level.name', header: 'Уровень' },
-    { accessorKey: 'test._count.test_questions', header: 'Кол. вопросов' },
-    { accessorFn: (row => { const el = row.test.employee; return `${el.surname} ${el.name[0]}.${el.patronymic[0]}.` }), header: 'Автор' },
-    { accessorFn: (row => row.date.toLocaleString().slice(0, 10)), header: 'Дата начала' },
+    { accessorKey: 'max.result.id', header: '№', enableSorting: true, enableResizing: true },
+    { accessorFn: (row => { const el = row.employee; return `${el.surname} ${el.name[0]}.${el.patronymic[0]}.` }), header: 'Сотрудник' },
+    { accessorFn: (row => row.max.result.date.toLocaleString().slice(0, 10)), header: 'Дата прохождения' },
+    { accessorFn: (row => row.max.result.result_questions.filter((i: any) => i.is_correct).length), header: 'Кол. правильных ответов' },
     {
-      accessorFn: (row => {
-        if (row.test._count.test_questions !== row._count.result_questions) return 'Не завершено'
-        else return Math.round(((row.result_questions.filter((i: any) => i.is_correct).length / row.test._count.test_questions) * 100))
-      }), header: 'Результат',
+      accessorKey: 'max.percent', header: 'Результат',
       cell: (props) => {
         const value = props.getValue();
         if (value === 'Не завершено') return <Badge variant={'destructive'}>{value}</Badge>
@@ -43,8 +37,8 @@ export function ResultsTable() {
 
   const load = async () => {
     setLoadingItems(true)
-    setAllPage(await GetCountEmployeeResults(search))
-    setDate(await GetEmployeeResults(search, page))
+    setAllPage(await GetCountPagesEmployeeResults(test, search))
+    setDate(await GetEmployeeResultsTest(test, search, page))
     setLoadingItems(false)
   }
 
@@ -117,7 +111,7 @@ export function ResultsTable() {
           </TableBody>
         </Table>
       </div>
-      {allPage !== 1 && data.length !== 0 && <Pages page={page} allPage={allPage} setPage={setPage} />}
+      {allPage !== 1 && data.length !== 0 && <Pages page={page} allPage={allPage} setPage={setPage}/>}
     </>
   )
 }

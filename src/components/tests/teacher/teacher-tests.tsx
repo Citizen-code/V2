@@ -87,7 +87,7 @@ export default function TeacherTests({type, categories, levels }: { type:boolean
                   )} />
                   <FormField control={form.control} name='category_id' render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>Категории</FormLabel>
+                      <FormLabel>Категория</FormLabel>
                       <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
                         <PopoverTrigger asChild>
                           <FormControl>

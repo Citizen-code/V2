@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { HiCursorClick } from "react-icons/hi";
 import { ResultsTable } from "./results-table";
+import { LevelsTable } from "./levels-table";
 
 export default async function EmployeeProfile() {
   const session = await getServerSession(authConfig)
@@ -57,10 +58,10 @@ export default async function EmployeeProfile() {
           <TabsTrigger value="levels">Повышения уровня</TabsTrigger>
         </TabsList>
         <TabsContent className='min-h-[100px]' value="results">
-          <ResultsTable data={await prisma.test_result.findMany({ include: { result_questions: { include: { test_questions: true, test_result: true } }, test: { include: { level: true, category: true, employee: true, _count: { select: { test_questions: true } } } }, _count: { select: { result_questions: true } } } })} />
+          <ResultsTable />
         </TabsContent>
         <TabsContent className='min-h-[100px]' value="levels">
-
+          <LevelsTable/>
         </TabsContent>
       </Tabs>
     </div>
