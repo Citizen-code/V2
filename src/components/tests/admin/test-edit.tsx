@@ -73,7 +73,7 @@ export default function TestEdit({ levels, categories, type_test, open, setOpen,
   return <Dialog open={open} onOpenChange={setOpen}>
     <DialogContent className='overflow-y-auto max-h-screen'>
       <DialogHeader>
-        <DialogTitle>Изменений данных сотрудника</DialogTitle>
+        <DialogTitle>Изменений данных тестирования</DialogTitle>
         <DialogDescription>Для сохранения необходимо подтвердить изменение данных.</DialogDescription>
       </DialogHeader>
       <Form {...form}>

@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 export function MainCard({ title, value, icon, helperText, className, }: { title: string; value: string; helperText: string; className: string; icon: ReactNode; }) {
   const {push} = useRouter();
   return (
-    <Card className={cn(className, 'min-w-[325px]')}>
+    <Card className={cn(className, 'min-w-[350px]')}>
       <CardHeader className="flex flex-row items-start justify-between pb-2">
         <div>
           <CardTitle className="text-2xl font-bold">{title}</CardTitle>

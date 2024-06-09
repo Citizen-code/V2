@@ -16,7 +16,7 @@ export default async function TestInfo({ test, is_edit = true }: { test: test & 
   return <div className="container pt-4">
     <div className='flex justify-between'>
       <h2 className="text-4xl font-bold col-span-2">{test.name}</h2>
-      {is_edit && <Button>Изменить</Button>}
+      {/* {is_edit && <Button>Изменить</Button>} */}
     </div>
     {test.description && <>
       <Separator className="my-4" />

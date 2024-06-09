@@ -1,10 +1,7 @@
 'use client'
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu"
 import { cn } from "@/lib/utils";
-import { Url } from "next/dist/shared/lib/router/router";
 import Link from "next/link";
-import { usePathname } from 'next/navigation'
-import { forwardRef } from "react";
 
 const components: { title: string; href: string; description: string }[] = [
   {
@@ -37,23 +34,25 @@ export default function TeacherMenu() {
             </ul>
           </NavigationMenuContent>
         </NavigationMenuItem>
-        {/* <NavigationMenuItem>
-          <Link href="/docs" legacyBehavior passHref>
+        <NavigationMenuItem>
+          <Link href="/teacher/about" passHref legacyBehavior>
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              Documentation
+              О приложении
             </NavigationMenuLink>
           </Link>
-        </NavigationMenuItem> */}
+        </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>
   );
 }
 
-const ListItem = forwardRef<React.ElementRef<"a">, React.ComponentPropsWithoutRef<"a">>(({ className, title, children, ...props }, ref) => {
+function ListItem({ className, title, children, href }:{className?:any, title?:any, children?:any, href?:string }) {
   return (
     <li>
       <NavigationMenuLink asChild>
-        <Link href={{pathname:props.href}} className={cn("block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground", className)}{...props}>
+        <Link href={{
+          pathname:href
+        }} className={cn("block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground", className)}>
           <div className="text-sm font-medium leading-none">{title}</div>
           <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
             {children}
@@ -62,4 +61,4 @@ const ListItem = forwardRef<React.ElementRef<"a">, React.ComponentPropsWithoutRe
       </NavigationMenuLink>
     </li>
   )
-})
+}

@@ -18,11 +18,11 @@ export default function PublishTestButton({ id }: { id: string }) {
     switch (i.type_id) {
       case 1: {
         const question = i as SingleSelectionType
-        return question.question.text === '' || question.answers.findIndex(y =>  y.text === '') !== -1
+        return question.question.text === '' || question.answers.findIndex((y:any) =>  y.text === '') !== -1
       }
       case 2: {
         const question = i as MultipleSelectionType
-        return question.question.text === '' || question.answers.findIndex(y => y.text === '') !== -1
+        return question.question.text === '' || question.answers.findIndex((y:any) => y.text === '') !== -1
       }
       default:
         return true

@@ -73,7 +73,7 @@ export default function UsersList({ levels, positions }: { levels: level[], posi
                 setSelectedUser(id)
                 setOpen(true)
               }}>Изменить данные о сотруднике</DropdownMenuItem>
-              <DropdownMenuItem>Отключить сотрудника</DropdownMenuItem>
+              {/* <DropdownMenuItem>Отключить сотрудника</DropdownMenuItem> */}
               <DropdownMenuItem onClick={() => {
                 setSelectedUser(id)
                 setAlert(true)

@@ -5,12 +5,8 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuChe
 import { Button } from "@/components/ui/button";
 import { ChevronDown, MoreHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
-import { GetUsersList, GetPagesUsersList, DeleteUser } from "@/actions/user";
-import { employee, employee_level, employee_position, position, level, category, test, type_test, test_public } from "@prisma/client";
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
+import { employee, level, category, test, type_test, test_public } from "@prisma/client";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import UserEdit from "./test-edit";
 import { Separator } from "@/components/ui/separator";
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { AlertDialogCancel } from "@radix-ui/react-alert-dialog";
@@ -113,7 +109,6 @@ export default function TestsList({ levels, categories, type_test }: { levels: l
   return <div className="container pt-4">
     <div className='flex justify-between'>
       <h2 className="text-4xl font-bold col-span-2">Тестирования</h2>
-      {/* <UserAdd levels={levels} positions={positions} load={load} /> */}
     </div>
     <Separator className="my-6" />
     <TestEdit levels={levels} categories={categories} type_test={type_test} open={open} setOpen={setOpen} selectedTest={selectedTest} load={load} />

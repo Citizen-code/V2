@@ -32,4 +32,7 @@ export default {
     },
   },
   session: {strategy: 'jwt'},
+  pages:{
+    signIn:'/auth',
+  }
 } as AuthOptions

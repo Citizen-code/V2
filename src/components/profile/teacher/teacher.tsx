@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import CategoryRadar from "./category-radar";
+import DataRadar from "./data-radar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 export default async function TeacherProfile() {
@@ -74,9 +74,13 @@ export default async function TeacherProfile() {
       <Tabs className='px-4' defaultValue="category">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="category">Категории</TabsTrigger>
+          <TabsTrigger value="level">Уровни</TabsTrigger>
         </TabsList>
         <TabsContent className='min-h-[100px]' value="category">
-          <CategoryRadar data={data.categories} />
+          <DataRadar data={data.categories} />
+        </TabsContent>
+        <TabsContent className='min-h-[100px]' value="level">
+          <DataRadar data={data.levels} />
         </TabsContent>
       </Tabs>
     </div>
@@ -92,7 +96,8 @@ async function GetTestsStats(id: string | undefined) {
     visits: data.reduce((sum, i) => sum + i._count.test_visited, 0),
     questions: data.reduce((sum, i) => sum + i._count.test_questions, 0),
     results: data.reduce((sum, i) => sum + i._count.test_result, 0),
-    categories: (await prisma.category.groupBy({ where: { test: { every: { author_id: id } } }, by: ['name'], _sum: { 'id': true } })).map(item => { return { subject: item.name, A: item._sum.id, fullMark: data.length } })
+    categories: (await prisma.category.groupBy({ where: { test: { every: { author_id: id } } }, by: ['name'], _sum: { 'id': true } })).map(item => { return { subject: item.name, A: item._sum.id, fullMark: data.length } }),
+    levels: (await prisma.level.groupBy({ where: { test: { every: { author_id: id } } }, by: ['name'], _sum: { 'id': true } })).map(item => { return { subject: item.name, A: item._sum.id, fullMark: data.length } })
   }
 }
 
