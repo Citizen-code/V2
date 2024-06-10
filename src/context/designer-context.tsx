@@ -22,6 +22,7 @@ export default function DesignerContextProvider({ children }: { children: ReactN
 
   const addElement = (index: number, element: test_questions) => {
     setElements((prev) => {
+      console.log(index)
       const newElement = [...prev];
       newElement.splice(index, 0, element)
       return newElement

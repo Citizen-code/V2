@@ -10,13 +10,13 @@ import TableResult from "./table-result";
 import prisma from "@/core/db";
 import MarkResult from "./mark-result";
 import { ResultsTable } from "./results-table";
+import QuestionsTestButton from "./questions-test-button";
 
 export default async function TestInfo({ test, is_edit = true }: { test: test & { category: category | undefined, level: level | undefined, type_test: type_test | undefined, employee: employee | undefined, _count: { test_questions: number, test_result: number } }, is_edit?:boolean }) {
-
   return <div className="container pt-4">
     <div className='flex justify-between'>
       <h2 className="text-4xl font-bold col-span-2">{test.name}</h2>
-      {/* {is_edit && <Button>Изменить</Button>} */}
+      {is_edit && <QuestionsTestButton id={test.id}/>}
     </div>
     {test.description && <>
       <Separator className="my-4" />

@@ -103,6 +103,8 @@ export async function CreateNewPassing(id: string) {
 export async function IsNewLevel(level_id: number) {
   const session = await getServerSession(authConfig)
   if (session?.user === undefined) throw new Error('Не авторизован')
+  const level = await prisma.employee_level.findFirst({where:{employee_id: session.user.id, level_id}, include: { level: true }})
+  if(level) return level
   const result = await prisma.test_public.findMany({
     where: {
       test: {

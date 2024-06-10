@@ -43,14 +43,14 @@ export function DesignerComponent({ question }: { question: test_questions }) {
 
 const SingleSelectionPropertiesSchema = z.object({
   question: z.object({
-    text: z.string().max(200),
+    text: z.string().max(200, "Текст вопроса не должен превышать 200 символов.").default(''),
     image: z.string().url().optional(),
   }),
   answers: z.array(z.object({
     id: z.string().uuid(),
-    text: z.string(),
+    text: z.string().max(50, "Текст ответа не должен превышать 50 символов.").default(''),
     is_true: z.boolean().default(false),
-  })).min(2).refine(obj => obj.findIndex(i => i.is_true) !== -1)
+  })).min(2, "Должно быть минимум 2 ответа на вопрос.").refine(obj => obj.findIndex(i => i.is_true) !== -1, "Вопрос должен иметь правильный ответ")
 })
 
 type SingleSelectionPropertiesFormSchemaType = z.infer<typeof SingleSelectionPropertiesSchema>;
