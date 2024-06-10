@@ -40,7 +40,7 @@ export default function EmployeeExams({ categories, levels, employee_levels }: {
   //if(typeof localStorage === 'undefined') return null
   const { push } = useRouter()
   const id_levels = employee_levels.map(i => i.level_id);
-  const [tests_public, setTestsPublic] = useState<(test_public & { test: test & { category: category | undefined, level: level | undefined, employee: employee | undefined, test_result: (test_result & { _count: { result_questions: number }, result_questions: result_questions[] })[], _count: { test_visited: number, test_questions: number, test_result: number } } })[]>([])
+  const [tests_public, setTestsPublic] = useState<(test_public & { test: test & { category: category | undefined, level: level | undefined, employee: employee | undefined, test_result: (test_result & { _count: { result_questions: number }, result_questions: result_questions[] })[], _count: { test_questions: number, test_result: number } } })[]>([])
   const [loading, startTransition] = useTransition();
   const [categoryOpen, setCategoryOpen] = useState(false)
   const [levelOpen, setLevelOpen] = useState(false)
@@ -211,10 +211,6 @@ export default function EmployeeExams({ categories, levels, employee_levels }: {
                 </CardTitle>
                 <CardDescription className="flex justify-between gap-2 text-muted-foreground text-sm pt-1">
                   <span className='flex gap-2'>
-                    <span className="flex items-center gap-2">
-                      <FaRegEye className="text-muted-foreground" />
-                      <span>{test._count.test_visited ?? 0}</span>
-                    </span>
                     <span className="flex items-center gap-2">
                       <VscPass className="text-muted-foreground" />
                       <span>{test._count.test_result ?? 0}</span>

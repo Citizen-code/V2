@@ -57,13 +57,6 @@ export default async function TeacherProfile() {
                 value={data.results.toLocaleString()}
                 className="shadow-md shadow-green-600"
               />
-              <StatsCard
-                title="Просмотры тестирований"
-                icon={<LuView className="text-blue-600" />}
-                helperText="Общее количество просмотров тестирований"
-                value={data.visits.toLocaleString()}
-                className="shadow-md shadow-blue-600"
-              />
             </CardContent>
             <div className='mt-2'>
               <ScrollBar orientation='horizontal' />
@@ -89,11 +82,10 @@ export default async function TeacherProfile() {
 
 async function GetTestsStats(id: string | undefined) {
   const data = await prisma.test.findMany({
-    where: { author_id: id }, select: { _count: { select: { test_visited: true, test_questions: true, test_result: true } } }
+    where: { author_id: id }, select: { _count: { select: { test_questions: true, test_result: true } } }
   })
   return {
     tests: data.length,
-    visits: data.reduce((sum, i) => sum + i._count.test_visited, 0),
     questions: data.reduce((sum, i) => sum + i._count.test_questions, 0),
     results: data.reduce((sum, i) => sum + i._count.test_result, 0),
     categories: (await prisma.category.groupBy({ where: { test: { every: { author_id: id } } }, by: ['name'], _sum: { 'id': true } })).map(item => { return { subject: item.name, A: item._sum.id, fullMark: data.length } }),

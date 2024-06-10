@@ -49,7 +49,7 @@ export async function GetEmployeeExams(params: EmployeeSearchExamsSchemaType) {
       test: {
         include: {
           category: true, level: true, employee: true, test_result: { include: { _count: { select: { result_questions: true } }, result_questions: true } },
-          _count: { select: { test_visited: true, test_questions: true, test_result: true } }
+          _count: { select: { test_questions: true, test_result: true } }
         }
       },
     }
@@ -77,7 +77,7 @@ export async function GetEmployeeTests(params: EmployeeSearchSchemaType) {
       test: {
         include: {
           category: true, level: true, employee: true, test_result: { include: { _count: { select: { result_questions: true } }, result_questions: true } },
-          _count: { select: { test_visited: true, test_questions: true, test_result: true } }
+          _count: { select: { test_questions: true, test_result: true } }
         }
       },
     }
@@ -90,7 +90,7 @@ export async function GetEmployeeTests(params: EmployeeSearchSchemaType) {
 
 export async function GetTeacherTests(params: TeacherSearchSchemaType) {
   const session = await getServerSession(authConfig)
-  return await prisma.test.findMany({ where: { name: { contains: params.text }, AND: [{ test_public: params.public_view ? undefined : null }, { test_public: params.draft_view ? undefined : { isNot: null } }], author_id: session?.user?.id, category_id: params.category_id === -1 ? undefined : params.category_id, level_id: params.level_id === -1 ? undefined : params.level_id, type_id: params.type_id === -1 ? undefined : params.type_id }, include: { category: true, level: true, test_public: true, _count: { select: { test_result: true, test_visited: true, test_questions: true } } } })
+  return await prisma.test.findMany({ where: { name: { contains: params.text }, AND: [{ test_public: params.public_view ? undefined : null }, { test_public: params.draft_view ? undefined : { isNot: null } }], author_id: session?.user?.id, category_id: params.category_id === -1 ? undefined : params.category_id, level_id: params.level_id === -1 ? undefined : params.level_id, type_id: params.type_id === -1 ? undefined : params.type_id }, include: { category: true, level: true, test_public: true, _count: { select: { test_result: true, test_questions: true } } } })
 }
 
 export async function CreateNewPassing(id: string) {
@@ -179,9 +179,6 @@ export async function DeleteTest(id: string) {
     where: { test_result: { test_id: id } }
   }))
   action.push(prisma.test_result.deleteMany({
-    where: { test_id: id }
-  }))
-  action.push(prisma.test_visited.deleteMany({
     where: { test_id: id }
   }))
   action.push(prisma.test_questions.deleteMany({

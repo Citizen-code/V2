@@ -12,7 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import CreateTestButton from "@/components/tests/teacher/create-test-button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import type { category, level, test, test_public, test_questions, test_result, test_visited, type_test } from "@prisma/client";
+import type { category, level, test, test_public, test_questions, test_result, type_test } from "@prisma/client";
 import { MdOutlineQuestionAnswer } from "react-icons/md";
 import { BiRightArrowAlt } from "react-icons/bi";
 import { FaEdit, FaRegEye } from "react-icons/fa";
@@ -36,7 +36,7 @@ const SearchSchema = z.object({
 })
 
 export default function TeacherTests({type, categories, levels }: { type:boolean, categories: category[], levels: level[] }) {
-  const [tests, setTests] = useState<(test & { category: category | undefined, level: level | undefined, test_public: test_public | null, _count:{test_visited: number, test_questions: number, test_result: number} })[]>([])
+  const [tests, setTests] = useState<(test & { category: category | undefined, level: level | undefined, test_public: test_public | null, _count:{test_questions: number, test_result: number} })[]>([])
   const [categoryOpen, setCategoryOpen] = useState(false)
   const [levelOpen, setLevelOpen] = useState(false)
   const [loadingItems, setLoadingItems] = useState(false)
@@ -207,7 +207,7 @@ export default function TeacherTests({type, categories, levels }: { type:boolean
 }
 
 
-function TestCard({ test }: { test: test & { level: level | undefined, test_public: test_public | null, _count:{test_visited: number, test_questions: number, test_result: number} }}) {
+function TestCard({ test }: { test: test & { level: level | undefined, test_public: test_public | null, _count:{ test_questions: number, test_result: number} }}) {
   return (
     <Card className='flex flex-col flex-grow'>
       <CardHeader>
@@ -225,12 +225,6 @@ function TestCard({ test }: { test: test & { level: level | undefined, test_publ
               <span className="flex items-center gap-2">
                 <VscPass className="text-muted-foreground" />
                 <span>{test._count.test_result ?? 0}</span>
-              </span>
-            }
-            {test.test_public &&
-              <span className="flex items-center gap-2">
-                <FaRegEye className="text-muted-foreground" />
-                <span>{test._count.test_visited ?? 0}</span>
               </span>
             }
           </span>
