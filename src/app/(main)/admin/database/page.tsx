@@ -22,28 +22,28 @@ export default async function Page() {
             title="Количество ошибок"
             icon={null}
             helperText="Информация о количестве ошибок в запросах."
-            value={data.xact_rollback.toString()}
+            value={data?.xact_rollback.toString() ?? 0}
             className="shadow-md shadow-cyan-600"
           />
           <StatsCard
             title="Количество добавленных"
             icon={null}
             helperText="Информация о количестве добавленных записей."
-            value={data.tup_inserted.toString()}
+            value={data?.tup_inserted.toString() ?? 0}
             className="shadow-md shadow-red-600"
           />
           <StatsCard
             title="Количество измененных"
             icon={null}
             helperText="Информация о количестве измененных записей."
-            value={data.tup_updated.toString()}
+            value={data?.tup_updated.toString() ?? 0}
             className="shadow-md shadow-pink-600"
           />
           <StatsCard
             title="Количество удаленных"
             icon={null}
             helperText="Информация о количестве удаленных записей."
-            value={data.tup_deleted.toString()}
+            value={data?.tup_deleted.toString() ?? 0}
             className="shadow-md shadow-purple-600"
           />
         </div>
