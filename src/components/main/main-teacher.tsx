@@ -34,7 +34,7 @@ export default function MainTeacher() {
           title="О приложении"
           icon={<HiCursorClick className="text-cyan-600" />}
           helperText={'Просмотр информации о работе приложения'}
-          value={'/teacher/about'}
+          value={'/about'}
           className="shadow-md shadow-cyan-600"
         />
       </div>

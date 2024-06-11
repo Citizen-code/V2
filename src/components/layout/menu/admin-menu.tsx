@@ -42,7 +42,7 @@ export default function AdminMenu() {
           </Link>
         </NavigationMenuItem>
         <NavigationMenuItem>
-          <Link href="/admin/about" passHref legacyBehavior>
+          <Link href="/about" passHref legacyBehavior>
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
               О приложении
             </NavigationMenuLink>

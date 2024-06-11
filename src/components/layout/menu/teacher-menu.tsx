@@ -35,7 +35,7 @@ export default function TeacherMenu() {
           </NavigationMenuContent>
         </NavigationMenuItem>
         <NavigationMenuItem>
-          <Link href="/teacher/about" passHref legacyBehavior>
+          <Link href="/about" passHref legacyBehavior>
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
               О приложении
             </NavigationMenuLink>

@@ -35,7 +35,7 @@ export default function EmployeeMenu() {
           </NavigationMenuContent>
         </NavigationMenuItem>
         <NavigationMenuItem>
-          <Link href="/employee/about" passHref legacyBehavior>
+          <Link href="/about" passHref legacyBehavior>
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
               О приложении
             </NavigationMenuLink>

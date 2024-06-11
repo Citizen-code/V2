@@ -35,7 +35,7 @@ export default function MainAdmin() {
           title="О приложении"
           icon={<HiCursorClick className="text-blue-600" />}
           helperText={'Просмотр информации о работе приложения'}
-          value={'/admin/about'}
+          value={'/about'}
           className="shadow-md shadow-blue-600"
         />
         <MainCard
