@@ -44,10 +44,15 @@ export async function GetEmployeeExams(params: EmployeeSearchExamsSchemaType) {
         type_id: params.type_id === -1 ? undefined : params.type_id,
       }
     },
+    orderBy: {
+      test: {
+        name: params.order ? 'asc' : 'desc',
+      }
+    },
     include: {
       test: {
         include: {
-          category: true, level: true, employee: true, test_result: { where:{ employee_id: session?.user?.id }, include: { _count: { select: { result_questions: true } }, result_questions: true } },
+          category: true, level: true, employee: true, test_result: { where: { employee_id: session?.user?.id }, include: { _count: { select: { result_questions: true } }, result_questions: true } },
           _count: { select: { test_questions: true, test_result: true } }
         }
       },
@@ -68,10 +73,15 @@ export async function GetEmployeeTests(params: EmployeeSearchSchemaType) {
         type_id: params.type_id === -1 ? undefined : params.type_id,
       }
     },
+    orderBy: {
+      test: {
+        name: params.order ? 'asc' : 'desc',
+      }
+    },
     include: {
       test: {
         include: {
-          category: true, level: true, employee: true, test_result: { where:{employee_id:session?.user?.id}, include: { _count: { select: { result_questions: true } }, result_questions: true } },
+          category: true, level: true, employee: true, test_result: { where: { employee_id: session?.user?.id }, include: { _count: { select: { result_questions: true } }, result_questions: true } },
           _count: { select: { test_questions: true, test_result: true } }
         }
       },
@@ -98,8 +108,8 @@ export async function CreateNewPassing(id: string) {
 export async function IsNewLevel(level_id: number) {
   const session = await getServerSession(authConfig)
   if (session?.user === undefined) throw new Error('Не авторизован')
-  const level = await prisma.employee_level.findFirst({where:{employee_id: session.user.id, level_id}, include: { level: true }})
-  if(level) return level
+  const level = await prisma.employee_level.findFirst({ where: { employee_id: session.user.id, level_id }, include: { level: true } })
+  if (level) return level
   const result = await prisma.test_public.findMany({
     where: {
       test: {
@@ -250,7 +260,7 @@ export async function GetEmployeeResultsTest(id: string, search: string, page: n
 }
 
 export async function GetCountPagesEmployeeResults(id: string, search: string) {
-  const count = await prisma.employee.count({
+  const count = Math.ceil(await prisma.employee.count({
     where: {
       OR: [
         { surname: { contains: search } },
@@ -263,16 +273,14 @@ export async function GetCountPagesEmployeeResults(id: string, search: string) {
         }
       }
     },
-  })
-  return Math.ceil(count/pages)
+  }) / pages)
+  return count === 0 ? 1 : count
 }
 
 export async function GetEmployeeResults(search: string, page: number = 1) {
   const session = await getServerSession(authConfig)
   if (session?.user?.id === undefined) throw new Error('Не авторизованный пользователь')
   return await prisma.test_result.findMany({
-    skip: pages * (page - 1),
-    take: pages,
     where: {
       employee_id: session.user.id,
       test: {
@@ -295,21 +303,23 @@ export async function GetEmployeeResults(search: string, page: number = 1) {
       },
       _count: {
         select: { result_questions: true }
-      }
-    }
+      },
+    },
+    skip: pages * (page - 1),
+    take: pages,
   })
 }
 
 export async function GetCountEmployeeResults(search: string) {
-  const session = await getServerSession(authConfig)
+  const session = await getServerSession(authConfig);
   if (session?.user?.id === undefined) throw new Error('Не авторизованный пользователь')
-  const count = await prisma.test_result.count({
+  const count = Math.ceil(await prisma.test_result.count({
     where: {
       employee_id: session.user.id,
       test: {
         name: { contains: search }
       }
     },
-  })
-  return Math.ceil(count/pages)
+  }) / pages)
+  return count === 0 ? 1 : count
 }

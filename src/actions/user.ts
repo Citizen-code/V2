@@ -4,6 +4,7 @@ import authConfig from "@/core/auth-config";
 import { getServerSession } from "next-auth";
 import { userSchemaType as userAddSchemaType } from "@/components/users/user-add";
 import { userSchemaType as userEditSchemaType } from "@/components/users/user-edit";
+const pages = 10;
 
 export async function GetTestsStats() {
   const session = await getServerSession(authConfig)
@@ -16,13 +17,27 @@ export async function GetTestsStats() {
   }
 }
 
-export async function GetPagesUsersList(count_items = 10) {
-  const count = Math.ceil(await prisma.employee.count() / 10);
+export async function GetPagesUsersList(search:string) {
+  const count = Math.ceil(await prisma.employee.count({where:{
+    OR:[
+      {surname:{contains:search}},
+      {name:{contains:search}},
+      {patronymic:{contains:search}},
+    ]
+  }}) / pages);
   return count === 0 ? 1 : count
 }
 
-export async function GetUsersList(page:number) {
-  return await prisma.employee.findMany({include:{employee_position:{include:{position:true}}, employee_level:{include:{level:true}}}})
+export async function GetUsersList(page:number, search:string) {
+  return await prisma.employee.findMany({
+    where:{
+      OR:[
+        {surname:{contains:search}},
+        {name:{contains:search}},
+        {patronymic:{contains:search}},
+      ]
+    },
+    include:{employee_position:{include:{position:true}}, employee_level:{include:{level:true}}}, skip: pages * (page - 1), take: pages})
 }
 
 export async function AddUser(params:userAddSchemaType) {

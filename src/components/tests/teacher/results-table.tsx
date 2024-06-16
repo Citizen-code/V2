@@ -37,8 +37,14 @@ export function ResultsTable({ test }: { test: string }) {
 
   const load = async () => {
     setLoadingItems(true)
-    setAllPage(await GetCountPagesEmployeeResults(test, search))
-    setDate(await GetEmployeeResultsTest(test, search, page))
+    let all = await GetCountPagesEmployeeResults(test, search);
+    setAllPage(all)
+    let temp = page
+    if(all < temp) {
+      temp = all;
+      setPage(all)
+    }
+    setDate(await GetEmployeeResultsTest(test, search, temp))
     setLoadingItems(false)
   }
 

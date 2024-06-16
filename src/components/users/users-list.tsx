@@ -93,8 +93,14 @@ export default function UsersList({ levels, positions }: { levels: level[], posi
 
   const load = async () => {
     setLoadingItems(true)
-    setAllPage(await GetPagesUsersList())
-    setData(await GetUsersList(page))
+    let all = await GetPagesUsersList(search);
+    setAllPage(all)
+    let temp = page
+    if(all < temp) {
+      temp = all;
+      setPage(all)
+    }
+    setData(await GetUsersList(temp, search))
     setLoadingItems(false)
   }
 

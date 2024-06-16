@@ -26,6 +26,8 @@ import { useTransition } from "react";
 import { useRouter } from 'next/navigation';
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 export type SearchSchemaType = z.infer<typeof SearchSchema>;
 const SearchSchema = z.object({
@@ -34,6 +36,7 @@ const SearchSchema = z.object({
   level_id: z.number(),
   type_id: z.number(),
   is_access: z.boolean(),
+  order: z.boolean(),
 })
 
 export default function EmployeeExams({ categories, levels, employee_levels }: { categories: category[], levels: level[], employee_levels: employee_level[] }) {
@@ -45,13 +48,13 @@ export default function EmployeeExams({ categories, levels, employee_levels }: {
   const [categoryOpen, setCategoryOpen] = useState(false)
   const [levelOpen, setLevelOpen] = useState(false)
   const [loadingItems, setLoadingItems] = useState(false)
-  let data = { text: '', category_id: -1, level_id: -1, type_id: 2, is_access: false }
+  let data = { text: '', category_id: -1, level_id: -1, type_id: 2, is_access: false, order:true }
   //let value = localStorage.getItem('exams_employee_params');
   //if(value !== null) data = JSON.parse(value)
   const form = useForm<SearchSchemaType>({
     resolver: zodResolver(SearchSchema),
     mode: 'onSubmit',
-    defaultValues: { text: '', category_id: -1, level_id: -1, type_id: 2, is_access: false }
+    defaultValues: { text: '', category_id: -1, level_id: -1, type_id: 2, is_access: false, order:true }
   })
   const load = async () => {
     setLoadingItems(true)
@@ -176,6 +179,20 @@ export default function EmployeeExams({ categories, levels, employee_levels }: {
                       <FormMessage />
                     </FormItem>
                   )} />
+                  <FormField control={form.control} name='order' render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Сортировка</FormLabel>
+                      <FormControl>
+                        <RadioGroup className='flex items-center space-x-2'>
+                          <RadioGroupItem onClick={() => form.setValue('order', true)} value={"true"} id='orderby' />
+                          <Label htmlFor='orderby'>По возрастанию</Label>
+                          <RadioGroupItem onClick={() => form.setValue('order', false)} value={"false"} id='orderbydesc' />
+                          <Label htmlFor='orderbydesc'>По убыванию</Label>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
                   <SheetFooter>
                     <SheetClose asChild>
                       <Button type="submit" className="mt-2">Применить изменения</Button>
@@ -285,7 +302,7 @@ export default function EmployeeExams({ categories, levels, employee_levels }: {
         {tests_public.length === 0 && (
           <div className="flex flex-col justify-center items-center flex-grow gap-4 pt-5">
             <h2 className="text-2xl">По вашему запросу не было найдено ни одного экзаменационного тестирования.</h2>
-            <Button onClick={() => {form.reset(data); load()}}>Сбросить параметры</Button>
+            <Button onClick={() => { form.reset(data); load() }}>Сбросить параметры</Button>
           </div>
         )}
       </>)}
