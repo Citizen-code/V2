@@ -37,7 +37,8 @@ export async function GetUsersList(page:number, search:string) {
         {patronymic:{contains:search}},
       ]
     },
-    include:{employee_position:{include:{position:true}}, employee_level:{include:{level:true}}}, skip: pages * (page - 1), take: pages})
+    include:{employee_position:{include:{position:true}}, employee_level:{include:{level:true}}}, 
+    skip: pages * (page - 1), take: pages})
 }
 
 export async function AddUser(params:userAddSchemaType) {
