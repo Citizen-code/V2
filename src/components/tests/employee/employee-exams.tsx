@@ -205,7 +205,7 @@ export default function EmployeeExams({ categories, levels, employee_levels }: {
                     </div>
                     <div className='gap-2 flex'>
                       {is_complete ? <Badge variant={'destructive'} className="bg-green-700 hover:bg-green-800">Пройдено</Badge> :
-                        <Badge variant={'destructive'}>Не пройдено</Badge>}
+                        <Badge variant={'destructive'} className='text-nowrap'>Не пройдено</Badge>}
                     </div>
                   </div>
                 </CardTitle>

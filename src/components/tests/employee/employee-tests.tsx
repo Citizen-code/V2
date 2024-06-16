@@ -189,7 +189,7 @@ export default function EmployeeTests({ categories, levels, employee_levels }: {
                     </div>
                     <div className='gap-2 flex'>
                       {test.test_result.findIndex(i => Math.round(i.result_questions.map(u => u.is_correct).length / test._count.test_questions * 100) >= 90) !== -1 ? <Badge variant={'destructive'} className="bg-green-700 hover:bg-green-800">Пройдено</Badge> :
-                        <Badge variant={'destructive'}>Не пройдено</Badge>}
+                        <Badge variant={'destructive'} className='text-nowrap'>Не пройдено</Badge>}
                     </div>
                   </div>
                 </CardTitle>

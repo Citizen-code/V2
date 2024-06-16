@@ -42,13 +42,12 @@ export async function GetEmployeeExams(params: EmployeeSearchExamsSchemaType) {
           { level_id: params.level_id === -1 ? undefined : params.level_id },
           { level_id: params.is_access ? undefined : (employee.employee_level.length === 0 ? { lte: 1 } : { lte: (Math.max(...(employee.employee_level.map(i => i.level_id))) + 1) }) }],
         type_id: params.type_id === -1 ? undefined : params.type_id,
-        test_result: { every: { employee_id: session?.user?.id } },
       }
     },
     include: {
       test: {
         include: {
-          category: true, level: true, employee: true, test_result: { include: { _count: { select: { result_questions: true } }, result_questions: true } },
+          category: true, level: true, employee: true, test_result: { where:{ employee_id: session?.user?.id }, include: { _count: { select: { result_questions: true } }, result_questions: true } },
           _count: { select: { test_questions: true, test_result: true } }
         }
       },
@@ -59,6 +58,7 @@ export async function GetEmployeeExams(params: EmployeeSearchExamsSchemaType) {
 
 export async function GetEmployeeTests(params: EmployeeSearchSchemaType) {
   const session = await getServerSession(authConfig)
+  console.log(params)
   return await prisma.test_public.findMany({
     where: {
       test: {
@@ -66,17 +66,12 @@ export async function GetEmployeeTests(params: EmployeeSearchSchemaType) {
         category_id: params.category_id === -1 ? undefined : params.category_id,
         level_id: params.level_id === -1 ? undefined : params.level_id,
         type_id: params.type_id === -1 ? undefined : params.type_id,
-        test_result: {
-          every: {
-            employee_id: session?.user?.id,
-          }
-        }
       }
     },
     include: {
       test: {
         include: {
-          category: true, level: true, employee: true, test_result: { include: { _count: { select: { result_questions: true } }, result_questions: true } },
+          category: true, level: true, employee: true, test_result: { where:{employee_id:session?.user?.id}, include: { _count: { select: { result_questions: true } }, result_questions: true } },
           _count: { select: { test_questions: true, test_result: true } }
         }
       },
